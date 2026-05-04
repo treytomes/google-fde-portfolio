@@ -24,7 +24,7 @@ from pathlib import Path
 
 from langchain_core.tools import tool
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langgraph.prebuilt import create_react_agent
+from langchain.agents import create_agent
 
 
 AGENT_MODEL = "gemini-2.5-flash"
@@ -104,11 +104,13 @@ def build_agent(client, embeddings: "np.ndarray", chunks: list[dict],
                 google_api_key=api_key,
             )
 
-    return create_react_agent(
+    graph = create_agent(
         llm,
         tools=[search_docs, answer_direct],
-        prompt=_SYSTEM_PROMPT,
+        system_prompt=_SYSTEM_PROMPT,
     )
+    graph.tool_list = [search_docs, answer_direct]
+    return graph
 
 
 def run_query(agent, question: str) -> dict:
@@ -122,7 +124,15 @@ def run_query(agent, question: str) -> dict:
             for tc in msg.tool_calls:
                 tools_called.append(tc["name"])
 
-    final_answer = result["messages"][-1].content
+    raw = result["messages"][-1].content
+    # Content can be a list of blocks (e.g. [{"type": "text", "text": "..."}]) or a plain string
+    if isinstance(raw, list):
+        final_answer = "\n".join(
+            block.get("text", "") if isinstance(block, dict) else str(block)
+            for block in raw
+        ).strip()
+    else:
+        final_answer = raw
 
     return {
         "question":   question,
