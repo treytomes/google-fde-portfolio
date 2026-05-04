@@ -24,7 +24,7 @@ CORPUS_DIR = Path(__file__).parent.parent / "corpus"
 # embeddings, RAG, grounding, auth, and enterprise considerations.
 PAGES = [
     # Platform overview
-    ("vertex_ai_overview",          "https://cloud.google.com/vertex-ai/generative-ai/docs/overview"),
+    ("vertex_ai_overview",          "https://cloud.google.com/vertex-ai/docs/start/introduction-unified-platform"),
     ("gemini_enterprise_platform",  "https://cloud.google.com/products/gemini-enterprise-agent-platform"),
 
     # Gemini models
@@ -41,11 +41,11 @@ PAGES = [
     ("rag_quickstart",              "https://cloud.google.com/vertex-ai/generative-ai/docs/rag-engine/rag-quickstart"),
 
     # Grounding & context
-    ("grounding_overview",          "https://cloud.google.com/vertex-ai/generative-ai/docs/grounding/overview"),
+    ("grounding_overview",          "https://cloud.google.com/vertex-ai/generative-ai/docs/grounding/ground-with-google-search"),
     ("context_cache",               "https://cloud.google.com/vertex-ai/generative-ai/docs/context-cache/context-cache-overview"),
 
     # Agent Builder / search
-    ("agent_builder_overview",      "https://cloud.google.com/generative-ai-app-builder/docs/introduction"),
+    ("agent_builder_overview",      "https://cloud.google.com/generative-ai-app-builder/docs/parse-chunk-documents"),
     ("vertex_ai_search",            "https://cloud.google.com/generative-ai-app-builder/docs/create-datastore-ingest"),
     ("agent_builder_intro",         "https://cloud.google.com/vertex-ai/generative-ai/docs/agent-builder/introduction"),
 

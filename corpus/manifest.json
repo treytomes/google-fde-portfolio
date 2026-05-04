@@ -2,9 +2,9 @@
   "pages": [
     {
       "slug": "vertex_ai_overview",
-      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/overview",
+      "url": "https://cloud.google.com/vertex-ai/docs/start/introduction-unified-platform",
       "filename": "vertex_ai_overview.txt",
-      "chars": 2989
+      "chars": 6986
     },
     {
       "slug": "gemini_enterprise_platform",
@@ -56,9 +56,9 @@
     },
     {
       "slug": "grounding_overview",
-      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/grounding/overview",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/grounding/ground-with-google-search",
       "filename": "grounding_overview.txt",
-      "chars": 2573
+      "chars": 25498
     },
     {
       "slug": "context_cache",
@@ -68,9 +68,9 @@
     },
     {
       "slug": "agent_builder_overview",
-      "url": "https://cloud.google.com/generative-ai-app-builder/docs/introduction",
+      "url": "https://cloud.google.com/generative-ai-app-builder/docs/parse-chunk-documents",
       "filename": "agent_builder_overview.txt",
-      "chars": 2825
+      "chars": 38793
     },
     {
       "slug": "vertex_ai_search",
