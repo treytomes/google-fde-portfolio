@@ -17,7 +17,7 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
-CORPUS_DIR = Path("corpus")
+CORPUS_DIR = Path(__file__).parent.parent / "corpus"
 
 # Representative Vertex AI / Gemini docs pages.
 # Covers the topics the RAG assistant should know: platform overview, models,
