@@ -39,8 +39,8 @@ Used for all development, testing, and the primary demo run.
 |---|---|
 | SDK | `google-generativeai` |
 | Auth | `GEMINI_API_KEY` in `.env` — free tier, no billing account required |
-| Model (generation) | `gemini-2.0-flash` — free tier, 15 RPM / 1M TPD |
-| Model (embeddings) | `models/text-embedding-004` — free tier |
+| Model (generation) | `gemini-2.5-flash` — confirmed working on free tier |
+| Model (embeddings) | `gemini-embedding-001` — 3072 dimensions, confirmed working on free tier |
 | AWS equivalent | Direct Bedrock API with API key (vs. IAM-gated Bedrock) |
 
 Free tier limits are well within portfolio demo usage. No billing surprises.
@@ -54,8 +54,8 @@ same code works against the enterprise-grade platform.
 |---|---|
 | SDK | `google-cloud-aiplatform` / `vertexai` |
 | Auth | Application Default Credentials (ADC) via `gcloud auth application-default login` |
-| Model (generation) | `gemini-2.0-flash` via Vertex AI |
-| Model (embeddings) | `text-embedding-004` via Vertex AI |
+| Model (generation) | `gemini-2.5-flash` via Vertex AI |
+| Model (embeddings) | `gemini-embedding-001` via Vertex AI |
 | Cost | ~$1 for a full demo run — covered by GCP free trial credits |
 | AWS equivalent | Bedrock with IAM role / service account auth |
 
