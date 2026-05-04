@@ -13,6 +13,8 @@ python-dotenv
 ragas
 datasets
 langchain-google-genai
+ollama           # Ollama Python client — local LLM fallback
+langchain-ollama # LangChain wrapper for Ollama — used by RAGAS judge fallback
 
 # ── Vertex AI verification path (Day 4 — uncomment when ready) ────────────────
 # google-cloud-aiplatform
