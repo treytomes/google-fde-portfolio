@@ -37,7 +37,7 @@ Used for all development, testing, and the primary demo run.
 
 | Component | Detail |
 |---|---|
-| SDK | `google-generativeai` |
+| SDK | `google-genai` (`google-generativeai` is deprecated as of 2025) |
 | Auth | `GEMINI_API_KEY` in `.env` — free tier, no billing account required |
 | Model (generation) | `gemini-2.5-flash` — confirmed working on free tier |
 | Model (embeddings) | `gemini-embedding-001` — 3072 dimensions, confirmed working on free tier |
