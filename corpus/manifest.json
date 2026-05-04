@@ -1,0 +1,119 @@
+{
+  "pages": [
+    {
+      "slug": "vertex_ai_overview",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/overview",
+      "filename": "vertex_ai_overview.txt",
+      "chars": 2989
+    },
+    {
+      "slug": "gemini_enterprise_platform",
+      "url": "https://cloud.google.com/products/gemini-enterprise-agent-platform",
+      "filename": "gemini_enterprise_platform.txt",
+      "chars": 15949
+    },
+    {
+      "slug": "gemini_models",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models",
+      "filename": "gemini_models.txt",
+      "chars": 13097
+    },
+    {
+      "slug": "gemini_api_overview",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/start/quickstarts/quickstart-multimodal",
+      "filename": "gemini_api_overview.txt",
+      "chars": 31898
+    },
+    {
+      "slug": "gemini_multimodal",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/send-chat-prompts-gemini",
+      "filename": "gemini_multimodal.txt",
+      "chars": 9721
+    },
+    {
+      "slug": "embeddings_overview",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/embeddings/get-text-embeddings",
+      "filename": "embeddings_overview.txt",
+      "chars": 16866
+    },
+    {
+      "slug": "embeddings_api_reference",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/text-embeddings-api",
+      "filename": "embeddings_api_reference.txt",
+      "chars": 22671
+    },
+    {
+      "slug": "rag_overview",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/rag-engine/rag-overview",
+      "filename": "rag_overview.txt",
+      "chars": 6215
+    },
+    {
+      "slug": "rag_quickstart",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/rag-engine/rag-quickstart",
+      "filename": "rag_quickstart.txt",
+      "chars": 7749
+    },
+    {
+      "slug": "grounding_overview",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/grounding/overview",
+      "filename": "grounding_overview.txt",
+      "chars": 2573
+    },
+    {
+      "slug": "context_cache",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/context-cache/context-cache-overview",
+      "filename": "context_cache.txt",
+      "chars": 6246
+    },
+    {
+      "slug": "agent_builder_overview",
+      "url": "https://cloud.google.com/generative-ai-app-builder/docs/introduction",
+      "filename": "agent_builder_overview.txt",
+      "chars": 2825
+    },
+    {
+      "slug": "vertex_ai_search",
+      "url": "https://cloud.google.com/generative-ai-app-builder/docs/create-datastore-ingest",
+      "filename": "vertex_ai_search.txt",
+      "chars": 11872
+    },
+    {
+      "slug": "agent_builder_intro",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/agent-builder/introduction",
+      "filename": "agent_builder_intro.txt",
+      "chars": 5021
+    },
+    {
+      "slug": "vector_search_overview",
+      "url": "https://cloud.google.com/vertex-ai/docs/vector-search/overview",
+      "filename": "vector_search_overview.txt",
+      "chars": 17156
+    },
+    {
+      "slug": "gcp_auth_adc",
+      "url": "https://cloud.google.com/docs/authentication/application-default-credentials",
+      "filename": "gcp_auth_adc.txt",
+      "chars": 5768
+    },
+    {
+      "slug": "vertex_ai_access_control",
+      "url": "https://cloud.google.com/vertex-ai/docs/general/access-control",
+      "filename": "vertex_ai_access_control.txt",
+      "chars": 50000
+    },
+    {
+      "slug": "responsible_ai",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/learn/responsible-ai",
+      "filename": "responsible_ai.txt",
+      "chars": 6019
+    },
+    {
+      "slug": "gemini_pricing",
+      "url": "https://cloud.google.com/vertex-ai/generative-ai/pricing",
+      "filename": "gemini_pricing.txt",
+      "chars": 50000
+    }
+  ],
+  "skipped": []
+}
