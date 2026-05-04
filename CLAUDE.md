@@ -22,18 +22,23 @@ Treat him as an experienced engineer getting oriented to a new cloud, not a begi
 ## Target Stack
 
 - **Language:** Python
-- **SDK (dev):** `google-genai` — the current Gemini API SDK (`google-generativeai` is deprecated as of 2025, do not use)
-- **SDK (verification):** `google-cloud-aiplatform` / `vertexai` — Vertex AI SDK, Day 4 only
-- **Model (generation):** `gemini-2.5-flash` — confirmed working on free tier (`gemini-2.0-flash` has limit: 0 quota on free-tier projects)
-- **Model (embeddings):** `gemini-embedding-001` — 3072 dimensions, confirmed working (`text-embedding-004` not available on free-tier API)
+- **SDK (all paths):** `google-genai` — handles both free-tier API and Vertex AI via
+  `genai.Client(api_key=...)` vs `genai.Client(vertexai=True, project=..., location=...)`.
+  `google-generativeai` is deprecated — do not use. `google-cloud-aiplatform` / `vertexai`
+  SDK is NOT needed — `google-genai` replaces it entirely.
+- **Model (generation):** `gemini-2.5-flash` — confirmed on both free tier and Vertex AI
+- **Model (embeddings):** `gemini-embedding-001` — 3072 dimensions, confirmed on both paths
 - **Auth (dev):** `GEMINI_API_KEY` in `.env` — free tier, no billing account needed
-- **Auth (verification):** Application Default Credentials (ADC) via `gcloud auth application-default login`
-- **RAG:** Manual vector store (numpy/cosine) for MVP; Vertex AI Vector Search for stretch
-- **Orchestration:** LangGraph (with Gemini as LLM node) — stretch goal
+- **Auth (Vertex AI):** Application Default Credentials (ADC) via
+  `gcloud auth application-default login` + `gcloud auth application-default set-quota-project GCP_PROJECT_ID`
+- **GCP project:** `gen-lang-client-0948275824`, location `us-south1`
+- **Billing:** Account `013827-052849-7D0788` linked; $300 credit available until 2026-07-20
+- **RAG:** Manual vector store (numpy/cosine); Vertex AI Vector Search for stretch
+- **Orchestration:** LangGraph (with Gemini as LLM node) — stretch goal (Issue #18)
 - **Evaluation:** RAGAS
 
-The notebook has a single `BACKEND` toggle at the top. All development uses `"gemini_api"`.
-The final verification switches to `"vertex_ai"` to confirm enterprise compatibility.
+The notebook has a 3-way `BACKEND` toggle: `"ollama"` (local, quota-free) /
+`"gemini_api"` (free tier, 20 req/day) / `"vertex_ai"` (enterprise, uses billing credits).
 
 ## Project Structure
 
@@ -49,7 +54,8 @@ google-fde-portfolio/
 │   ├── chunker.py          # document chunking
 │   ├── embedder.py         # embedding calls (both backends)
 │   ├── retrieval.py        # cosine similarity search
-│   ├── generation.py       # Gemini generation with context
+│   ├── generation.py       # Gemini generation with context; returns usage_metadata
+│   ├── cost.py             # CostTracker — per-query and session cost at Vertex AI rates
 │   └── agent.py            # LangGraph agentic wrapper (Day 5 stretch — not yet created)
 ├── corpus/                 # fetched and processed GCP docs
 ├── eval/
@@ -61,20 +67,23 @@ google-fde-portfolio/
 
 ## Key GCP Concepts (orientation notes)
 
-- **ADC auth:** Run `gcloud auth application-default login` once locally. SDK picks it
-  up automatically. No need to manage credentials files explicitly for local dev.
+- **ADC auth:** Run `gcloud auth application-default login` then
+  `gcloud auth application-default set-quota-project PROJECT_ID`. Both steps required —
+  the second links billing so Vertex AI calls don't get PERMISSION_DENIED.
+- **One SDK for everything:** `google-genai` handles both paths. Free tier:
+  `genai.Client(api_key=KEY)`. Vertex AI: `genai.Client(vertexai=True, project=ID, location=LOC)`.
+  Do NOT use `google-generativeai` (deprecated) or `google-cloud-aiplatform` (not needed).
+- **Vertex AI API must be enabled:** Visit the GCP console and enable
+  `aiplatform.googleapis.com` on the project before making Vertex AI calls.
 - **Vertex AI vs Bedrock:** Vertex AI Studio ≈ Bedrock Playground; Vertex AI Search ≈
   Bedrock Knowledge Bases; Vertex AI Agent Builder ≈ Bedrock Agents; Model Garden ≈
   Bedrock model catalog.
-- **Gemini SDK (dev path):** `from google import genai; client = genai.Client(api_key=...)` —
-  current `google-genai` SDK. Do NOT use `google-generativeai` — it is deprecated.
-- **Gemini SDK (verification path):** `from vertexai.generative_models import GenerativeModel` —
-  Vertex AI SDK, used for the final verification run only.
 - **Model gotchas:** `gemini-2.0-flash` has `limit: 0` quota on free-tier projects — use
   `gemini-2.5-flash`. `text-embedding-004` returns 404 on the free-tier API — use
   `gemini-embedding-001` (3072 dims).
-- **Project/location:** Every Vertex AI call needs `project` and `location` params.
-  Initialize once with `vertexai.init(project=PROJECT_ID, location="us-central1")`.
+- **Pricing (verified May 2026):** `gemini-2.5-flash` standard: $0.30 input / $2.50 output
+  per 1M tokens. `gemini-2.5-flash-lite`: $0.10 / $0.40. Embedding pricing not listed on
+  the pricing page in a parseable section — verify from GCP billing console.
 
 ## Implementation Priorities
 
@@ -82,16 +91,14 @@ google-fde-portfolio/
 2. ~~Get a single Gemini call working before building the pipeline~~ — done (Day 1)
 3. ~~Get a single embedding working before building the retrieval system~~ — done (Day 1)
 4. ~~Build RAG pipeline incrementally~~ — done (Day 2): chunker → embedder → retrieval → generation → ask()
-5. RAGAS evaluation is not optional — it's the differentiator for the FDE pitch (Day 3)
+5. ~~RAGAS evaluation~~ — done (Day 3): all 4 metrics ≥ 0.70; Faithfulness 0.98, Context Recall 0.94
+6. ~~Vertex AI verification~~ — done (Day 4): both models confirmed on Vertex AI via google-genai
+7. LangGraph agentic wrapper — Day 5 stretch (Issue #18)
 
 ## Resume Gate
 
-Once Day 4 is complete and the notebook runs end-to-end with `BACKEND = "vertex_ai"`:
-- Add GCP back to `~/Documents/job-search-2026/resume-2026-fde4.html` competencies
-- Specific addition: `GCP (Vertex AI · Gemini · Vertex AI Search)`
-
-Do not add it before the Vertex AI verification run succeeds. The free Gemini API
-development path (Days 1–3) does not satisfy this gate.
+**CLEARED (2026-05-04).** Day 4 Vertex AI verification succeeded.
+- Add `GCP (Vertex AI · Gemini · Vertex AI Search)` to `~/Documents/job-search-2026/resume-2026-fde4.html`
 
 ## Corpus Notes (learned during Day 2)
 
@@ -108,19 +115,32 @@ development path (Days 1–3) does not satisfy this gate.
 
 ## RAGAS Notes
 
-- **Required packages:** `ragas`, `datasets`, `langchain-google-genai` (LLM wrapper for
-  faithfulness/answer_relevancy scoring). Uncomment in `requirements.txt` for Day 3.
-- **LLM for evaluation:** RAGAS uses an LLM internally to score faithfulness and answer
-  relevancy. Wire up `gemini-2.5-flash` via `ChatGoogleGenerativeAI` from
-  `langchain-google-genai`. Pass as `llm=` to `evaluate()`.
-- **Embedding for evaluation:** RAGAS also needs an embedding model for `context_recall`.
-  Use `GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")`.
-- **Rate limits during eval:** Running RAGAS over 10 questions makes many LLM calls.
-  Expect the evaluation to take 3–5 minutes. Add `time.sleep()` between questions if
-  hitting 429s.
+- **Required packages:** `ragas`, `datasets`, `langchain-google-genai`, `langchain-ollama`
+- **Judge LLM fallback chain:** Vertex AI `gemini-2.5-flash` (preferred, no daily quota) →
+  free-tier `gemini-2.5-flash-lite` → Ollama `gemma3:1b` → Ollama `gemma4:e2b`
+- **Vertex AI judge:** `ChatGoogleGenerativeAI(model="gemini-2.5-flash", vertexai=True, project=..., location=...)`
+  with `LangchainLLMWrapper`. Same for embeddings via `GoogleGenerativeAIEmbeddings`.
+- **RAGAS API version (0.4.3):** Use old `ragas.metrics` singletons (`faithfulness`,
+  `answer_relevancy`, `context_precision`, `context_recall`) with `LangchainLLMWrapper`.
+  The `ragas.metrics.collections` namespace is incompatible with `evaluate()`.
+- **RunConfig:** `timeout=180, max_workers=4` for Gemini/Vertex AI. `timeout=600, max_workers=1`
+  for Ollama. NaN results occur when a job times out — handled gracefully in display/JSON.
+- **Runtime:** ~3 minutes on Vertex AI for 12 questions. Pipeline cost tracked per-question
+  via `CostTracker`; RAGAS judge costs billed separately to the same GCP project.
 - **Key metrics:** `faithfulness` (answer grounded in context), `answer_relevancy`
   (answer addresses the question), `context_precision` (retrieved chunks are relevant),
-  `context_recall` (relevant chunks were retrieved).
+  `context_recall` (relevant chunks were retrieved). Threshold: ≥ 0.70 to pass.
+
+## Cost Tracking Notes
+
+- `src/cost.py` — `CostTracker` active on all three backends; labeled appropriately
+- **Verified pricing (May 2026, from corpus/gemini_pricing.txt):**
+  - `gemini-2.5-flash` standard: $0.30 input / $2.50 output per 1M tokens
+  - `gemini-2.5-flash-lite` standard: $0.10 input / $0.40 output per 1M tokens
+- **Embedding pricing:** NOT verified from primary source. Corpus hits 10K char cap before
+  reaching embedding section of pricing page. $0.025/1M tokens is a proxy — do not cite
+  without checking GCP billing console.
+- Typical query: ~$0.001 (generation only; embedding cost is near-zero at this scale)
 
 ## The Pitch
 
