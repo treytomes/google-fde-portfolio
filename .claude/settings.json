@@ -2,16 +2,31 @@
   "permissions": {
     "allow": [
       "Bash(python3:*)",
+      "Bash(python:*)",
       "Bash(pip:*)",
       "Bash(pip3:*)",
       "Bash(gcloud:*)",
-      "Bash(python:*)",
+      "Bash(jupyter:*)",
+      "Bash(nbconvert:*)",
       "Bash(find:*)",
       "Bash(ls:*)",
       "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(sort:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
       "Bash(mkdir:*)",
       "Bash(cp:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(wget:*)",
+      "Bash(curl:*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git push*)",
+      "Bash(gh:*)"
     ]
   }
 }
