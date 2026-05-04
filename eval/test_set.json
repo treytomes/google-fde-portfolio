@@ -1,0 +1,62 @@
+[
+  {
+    "question": "What is the output dimensionality of gemini-embedding-001 and how does it compare to other Vertex AI embedding models?",
+    "ground_truth": "gemini-embedding-001 produces vectors with up to 3072 dimensions by default. This is larger than text-embedding-005 and text-multilingual-embedding-002, which both produce up to 768 dimensions. Open models are smaller still: multilingual-e5-small produces up to 384 dimensions and multilingual-e5-large up to 1024 dimensions. All models support the output_dimensionality parameter to produce smaller vectors, trading some quality for reduced storage and compute costs.",
+    "topic": "embeddings"
+  },
+  {
+    "question": "What are the six steps in the Vertex AI RAG Engine pipeline?",
+    "ground_truth": "The six steps in the Vertex AI RAG Engine pipeline are: (1) Data ingestion — intake data from sources such as local files, Cloud Storage, and Google Drive; (2) Data transformation — convert data for indexing, such as splitting into chunks; (3) Embedding — create numerical vector representations of text that capture semantic meaning; (4) Data indexing — create a corpus (index) that structures the knowledge base for optimized searching; (5) Retrieval — search the knowledge base to find information relevant to the user query; (6) Generation — add the retrieved information as context to the original query to guide the model to produce factually grounded responses.",
+    "topic": "rag"
+  },
+  {
+    "question": "How does Grounding with Google Search work in Vertex AI, and what is the daily query limit?",
+    "ground_truth": "Grounding with Google Search connects Gemini model outputs to publicly available web data, enabling responses based on the latest and most accurate information. To use it, you enable the Google Search tool in the API request. When enabled, Google Search Suggestions must be displayed in production applications. Search results can be customized for a specific geographic location using latitude and longitude coordinates. The daily limit is one million queries per day; if more are required, Google Cloud support must be contacted.",
+    "topic": "grounding"
+  },
+  {
+    "question": "What is the search order that Application Default Credentials uses to find credentials?",
+    "ground_truth": "Application Default Credentials searches for credentials in this order: (1) the GOOGLE_APPLICATION_CREDENTIALS environment variable, which can point to a credential configuration file for Workforce Identity Federation, Workload Identity Federation, a service account key, or a credential file created by gcloud; (2) a credential file created by running gcloud auth application-default login, stored at $HOME/.config/gcloud/application_default_credentials.json on Linux/macOS or %APPDATA%\\gcloud\\application_default_credentials.json on Windows; (3) the attached service account, returned by the metadata server, which is the preferred method for production environments on Google Cloud.",
+    "topic": "auth"
+  },
+  {
+    "question": "What is context caching in Vertex AI and what are the two types available?",
+    "ground_truth": "Context caching reduces the cost and latency of Gemini requests that contain repeated content. Vertex AI offers two types: (1) Implicit caching — automatic caching enabled by default for all Google Cloud projects, providing a 90% discount on cached tokens when cache hits occur, with no storage costs; (2) Explicit caching — manual caching via the Vertex AI API where you explicitly declare the content to cache, control TTL (default 60 minutes), and reference it by resource name in prompt requests. Explicit caching provides a 90% discount on Gemini 2.5 or later models and a 75% discount on Gemini 2.0 models.",
+    "topic": "context_cache"
+  },
+  {
+    "question": "What technology underpins Vertex AI Vector Search and what Google products use it?",
+    "ground_truth": "Vertex AI Vector Search is built on the ScaNN (Scalable Nearest Neighbors) algorithm developed by Google Research. The same research and technology powers core Google products including Google Search, YouTube, and Google Play. Vector Search is designed to provide the scalability, availability, and performance needed for massive datasets at a global scale, making it an enterprise-grade solution for semantic search and recommendation systems.",
+    "topic": "vector_search"
+  },
+  {
+    "question": "What are the responsible AI limitations that Vertex AI documentation identifies for large language models?",
+    "ground_truth": "The Vertex AI documentation identifies these LLM limitations: edge cases (unusual situations leading to overconfidence or inappropriate outputs); model hallucinations, grounding, and factuality (generating plausible-sounding but factually incorrect outputs — grounding to specific data can reduce this); data quality and tuning (inaccurate inputs cause suboptimal performance); bias amplification (inadvertently reinforcing societal biases from training data); language quality (inconsistent performance for dialects and non-English languages due to underrepresentation); limited domain expertise (lack of depth on specialized topics); and length and structure issues (inputs or outputs exceeding token limits bypass safety classifiers).",
+    "topic": "responsible_ai"
+  },
+  {
+    "question": "What is the minimum token count required for explicit context caching in Gemini 2.5 models?",
+    "ground_truth": "The minimum cache token count for explicit caching in Gemini 2.0 and 2.5 models is 2,048 tokens. For Gemini 3 and 3.1 models, the minimum is 4,096 tokens. The maximum size of content that can be cached using a blob or text is 10 MB, and there is no maximum cache duration.",
+    "topic": "context_cache"
+  },
+  {
+    "question": "What task types should be used when embedding corpus documents versus user queries in Vertex AI?",
+    "ground_truth": "When embedding corpus documents for retrieval, use task_type RETRIEVAL_DOCUMENT. When embedding user queries at retrieval time, use task_type RETRIEVAL_QUERY. These task types affect embedding quality for asymmetric retrieval — the model optimises vectors differently depending on whether the text is a document being indexed or a query being matched against those documents. The Vertex AI Text Embeddings API also supports other task types such as SEMANTIC_SIMILARITY, CLASSIFICATION, and CLUSTERING.",
+    "topic": "embeddings"
+  },
+  {
+    "question": "What are the per-request limits for the Vertex AI Text Embeddings API?",
+    "ground_truth": "The Vertex AI Text Embeddings API has the following per-request limits: a maximum of 250 input texts per request; a maximum total input of 20,000 tokens per request (requests exceeding this limit return a 400 error); and each individual input text is limited to 2,048 tokens, with excess silently truncated by default. Silent truncation can be disabled by setting autoTruncate to false.",
+    "topic": "embeddings"
+  },
+  {
+    "question": "How does Vertex AI RAG Engine support VPC Service Controls and what security features does it provide?",
+    "ground_truth": "Vertex AI RAG Engine supports VPC Service Controls (VPC-SC) and CMEK (Customer-Managed Encryption Keys). VPC-SC support means cached content cannot be exfiltrated beyond a service perimeter. If Cloud Storage is used to build a cache, the bucket should be included in the service perimeter to protect cache content. Data residency and AXT (Access Transparency) security controls are not supported. If a Vertex AI RAG Engine-managed Spanner instance is used as a vector database in a GA region, Google Cloud bills for that Spanner instance.",
+    "topic": "rag"
+  },
+  {
+    "question": "What is the pricing for Gemini 2.5 Flash input and output tokens on Vertex AI?",
+    "ground_truth": "Based on the Vertex AI pricing page, Gemini 2.5 Flash is priced at $0.15 per million input tokens for prompts up to 200K tokens, and $0.60 per million output tokens. For prompts longer than 200K tokens, long context rates apply. Cached input tokens receive a discount. These are standard on-demand rates; Flex/Batch pricing provides lower rates for non-time-sensitive workloads.",
+    "topic": "pricing"
+  }
+]
