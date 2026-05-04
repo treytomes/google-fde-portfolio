@@ -21,12 +21,14 @@
       "Bash(mv:*)",
       "Bash(wget:*)",
       "Bash(curl:*)",
+      "Bash(touch:*)",
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
       "Bash(git add*)",
       "Bash(git push*)",
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "Bash(sleep:*)"
     ]
   }
 }

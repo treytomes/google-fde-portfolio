@@ -22,14 +22,15 @@ Treat him as an experienced engineer getting oriented to a new cloud, not a begi
 ## Target Stack
 
 - **Language:** Python
-- **Model (dev):** Gemini API via `google-generativeai` — free tier, `GEMINI_API_KEY` in `.env`
-- **Model (verification):** Gemini via Vertex AI Python SDK (`google-cloud-aiplatform`) — final verification run only
-- **Embeddings:** `text-embedding-004` — same model, available on both paths
+- **SDK (dev):** `google-genai` — the current Gemini API SDK (`google-generativeai` is deprecated as of 2025, do not use)
+- **SDK (verification):** `google-cloud-aiplatform` / `vertexai` — Vertex AI SDK, Day 4 only
+- **Model (generation):** `gemini-2.5-flash` — confirmed working on free tier (`gemini-2.0-flash` has limit: 0 quota on free-tier projects)
+- **Model (embeddings):** `gemini-embedding-001` — 3072 dimensions, confirmed working (`text-embedding-004` not available on free-tier API)
+- **Auth (dev):** `GEMINI_API_KEY` in `.env` — free tier, no billing account needed
+- **Auth (verification):** Application Default Credentials (ADC) via `gcloud auth application-default login`
 - **RAG:** Manual vector store (numpy/cosine) for MVP; Vertex AI Vector Search for stretch
 - **Orchestration:** LangGraph (with Gemini as LLM node) — stretch goal
 - **Evaluation:** RAGAS
-- **Auth (dev):** Gemini API key — no billing account needed
-- **Auth (verification):** Application Default Credentials (ADC) via `gcloud auth application-default login`
 
 The notebook has a single `BACKEND` toggle at the top. All development uses `"gemini_api"`.
 The final verification switches to `"vertex_ai"` to confirm enterprise compatibility.
@@ -40,13 +41,17 @@ The final verification switches to `"vertex_ai"` to confirm enterprise compatibi
 google-fde-portfolio/
 ├── CLAUDE.md               # this file
 ├── PROJECT_PLAN.md         # full plan with day-by-day tasks
-├── src/
-│   ├── embeddings.py       # chunk + embed corpus
-│   ├── retrieval.py        # vector search
-│   ├── generation.py       # Gemini call with retrieved context
-│   ├── pipeline.py         # end-to-end Q&A
+├── TECH_STACK.md           # detailed technology choices and rationale
+├── notebooks/              # Jupyter notebooks — primary deliverable
+│   ├── day1_quickstart.ipynb   # Day 1: SDK + model verification (complete)
+│   └── rag_pipeline.ipynb      # Days 2-3: full RAG demo (in progress)
+├── src/                    # shared Python helper modules
+│   ├── chunker.py          # document chunking
+│   ├── embedder.py         # embedding calls (both backends)
+│   ├── retrieval.py        # cosine similarity search
+│   ├── generation.py       # Gemini generation with context
 │   └── agent.py            # LangGraph agentic wrapper (stretch)
-├── corpus/                 # source documents
+├── corpus/                 # fetched and processed GCP docs
 ├── eval/
 │   ├── test_set.json       # Q&A pairs with ground truth
 │   └── evaluate.py         # RAGAS evaluation script
@@ -61,10 +66,13 @@ google-fde-portfolio/
 - **Vertex AI vs Bedrock:** Vertex AI Studio ≈ Bedrock Playground; Vertex AI Search ≈
   Bedrock Knowledge Bases; Vertex AI Agent Builder ≈ Bedrock Agents; Model Garden ≈
   Bedrock model catalog.
-- **Gemini SDK (dev path):** `import google.generativeai as genai` — direct Gemini API,
-  free tier, used for all development.
+- **Gemini SDK (dev path):** `from google import genai; client = genai.Client(api_key=...)` —
+  current `google-genai` SDK. Do NOT use `google-generativeai` — it is deprecated.
 - **Gemini SDK (verification path):** `from vertexai.generative_models import GenerativeModel` —
   Vertex AI SDK, used for the final verification run only.
+- **Model gotchas:** `gemini-2.0-flash` has `limit: 0` quota on free-tier projects — use
+  `gemini-2.5-flash`. `text-embedding-004` returns 404 on the free-tier API — use
+  `gemini-embedding-001` (3072 dims).
 - **Project/location:** Every Vertex AI call needs `project` and `location` params.
   Initialize once with `vertexai.init(project=PROJECT_ID, location="us-central1")`.
 
@@ -78,11 +86,12 @@ google-fde-portfolio/
 
 ## Resume Gate
 
-Once the Vertex AI quickstart is confirmed working (Day 1 complete):
+Once Day 4 is complete and the notebook runs end-to-end with `BACKEND = "vertex_ai"`:
 - Add GCP back to `~/Documents/job-search-2026/resume-2026-fde4.html` competencies
 - Specific addition: `GCP (Vertex AI · Gemini · Vertex AI Search)`
 
-Do not add it before the quickstart is done.
+Do not add it before the Vertex AI verification run succeeds. The free Gemini API
+development path (Days 1–3) does not satisfy this gate.
 
 ## The Pitch
 
