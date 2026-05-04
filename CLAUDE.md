@@ -50,7 +50,7 @@ google-fde-portfolio/
 │   ├── embedder.py         # embedding calls (both backends)
 │   ├── retrieval.py        # cosine similarity search
 │   ├── generation.py       # Gemini generation with context
-│   └── agent.py            # LangGraph agentic wrapper (stretch)
+│   └── agent.py            # LangGraph agentic wrapper (Day 5 stretch — not yet created)
 ├── corpus/                 # fetched and processed GCP docs
 ├── eval/
 │   ├── test_set.json       # Q&A pairs with ground truth
@@ -78,11 +78,11 @@ google-fde-portfolio/
 
 ## Implementation Priorities
 
-1. Get auth working first — everything else depends on it
-2. Get a single Gemini call working before building the pipeline
-3. Get a single embedding working before building the retrieval system
-4. Build incrementally — working at each step before moving to the next
-5. RAGAS evaluation is not optional — it's the differentiator for the FDE pitch
+1. ~~Get auth working first~~ — done (Day 1)
+2. ~~Get a single Gemini call working before building the pipeline~~ — done (Day 1)
+3. ~~Get a single embedding working before building the retrieval system~~ — done (Day 1)
+4. ~~Build RAG pipeline incrementally~~ — done (Day 2): chunker → embedder → retrieval → generation → ask()
+5. RAGAS evaluation is not optional — it's the differentiator for the FDE pitch (Day 3)
 
 ## Resume Gate
 
@@ -92,6 +92,35 @@ Once Day 4 is complete and the notebook runs end-to-end with `BACKEND = "vertex_
 
 Do not add it before the Vertex AI verification run succeeds. The free Gemini API
 development path (Days 1–3) does not satisfy this gate.
+
+## Corpus Notes (learned during Day 2)
+
+- **Rebrand banner:** Most GCP docs pages start with "Vertex AI is transitioning to become
+  part of Gemini Enterprise Agent Platform..." — this is site-wide nav noise, not content.
+  Strip it in `extract_text()` in `src/build_corpus.py`.
+- **Per-page cap:** `MAX_CHARS = 50_000` prevents single pages dominating the chunk index.
+  `gemini_pricing` and `vertex_ai_access_control` both hit this cap. Pricing in particular
+  surfaces as retrieval noise — consider a lower per-page cap or dropping it.
+- **Embedding rate limits:** Free-tier embedding quota is tight. Batch size of 10 with 2s
+  inter-batch delay avoids most 429s; exponential backoff (10s base, 5 retries) handles the
+  rest. After any corpus rebuild, delete `corpus/embeddings.npy` and `corpus/chunks.json`
+  before re-embedding.
+
+## RAGAS Notes
+
+- **Required packages:** `ragas`, `datasets`, `langchain-google-genai` (LLM wrapper for
+  faithfulness/answer_relevancy scoring). Uncomment in `requirements.txt` for Day 3.
+- **LLM for evaluation:** RAGAS uses an LLM internally to score faithfulness and answer
+  relevancy. Wire up `gemini-2.5-flash` via `ChatGoogleGenerativeAI` from
+  `langchain-google-genai`. Pass as `llm=` to `evaluate()`.
+- **Embedding for evaluation:** RAGAS also needs an embedding model for `context_recall`.
+  Use `GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")`.
+- **Rate limits during eval:** Running RAGAS over 10 questions makes many LLM calls.
+  Expect the evaluation to take 3–5 minutes. Add `time.sleep()` between questions if
+  hitting 429s.
+- **Key metrics:** `faithfulness` (answer grounded in context), `answer_relevancy`
+  (answer addresses the question), `context_precision` (retrieved chunks are relevant),
+  `context_recall` (relevant chunks were retrieved).
 
 ## The Pitch
 
