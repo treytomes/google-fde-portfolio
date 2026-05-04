@@ -37,7 +37,8 @@ The architecture follows the Retrieval-Augmented Generation (RAG) pattern:
 4. **Generation** — The retrieved chunks are passed to `gemini-2.5-flash` as context,
    which synthesizes a grounded answer with source citations
 
-A typical query costs under $0.001 at Vertex AI rates.
+A typical query costs under $0.001 at Vertex AI rates (generation cost verified;
+embedding cost estimated — verify against GCP billing for production use).
 
 ---
 

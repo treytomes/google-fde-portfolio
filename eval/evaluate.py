@@ -46,6 +46,7 @@ from ragas.metrics import (
 from embedder import load_embeddings
 from retrieval import retrieve
 from generation import generate, OLLAMA_MODEL, OLLAMA_BASE_URL
+from cost import CostTracker
 
 CORPUS_DIR    = Path(__file__).parent.parent / "corpus"
 TEST_SET_PATH = Path(__file__).parent / "test_set.json"
@@ -166,15 +167,26 @@ def _make_judge_llm_and_config(api_key: str):
     )
 
 
-def build_samples(client, embeddings, chunks, test_set: list[dict]) -> list[SingleTurnSample]:
+def build_samples(client, embeddings, chunks, test_set: list[dict],
+                  cost_tracker: CostTracker) -> list[SingleTurnSample]:
     samples = []
     for i, item in enumerate(test_set, 1):
         question     = item["question"]
         ground_truth = item["ground_truth"]
 
         print(f"  [{i}/{len(test_set)}] {question[:70]}...")
+        cost_tracker.reset_exchange()
         context_chunks = retrieve(question, client, embeddings, chunks, k=5)
-        answer         = generate(question, context_chunks, client)
+        cost_tracker.record_embedding(len(question))
+        answer = generate(question, context_chunks, client)
+        usage  = answer.get("usage", {})
+        if usage:
+            cost_tracker.record_generation(
+                usage.get("input_tokens", 0),
+                usage.get("output_tokens", 0),
+                usage.get("model", "gemini-2.5-flash"),
+            )
+        print(f"         cost: ${cost_tracker.exchange_cost:.6f}")
 
         samples.append(SingleTurnSample(
             user_input=question,
@@ -204,13 +216,17 @@ def main():
     location = os.environ.get("GCP_LOCATION", "us-central1")
     if project:
         client = genai.Client(vertexai=True, project=project, location=location)
+        backend = "vertex_ai"
         print(f"  Pipeline backend : Vertex AI ({location})")
     else:
         client = genai.Client(api_key=api_key)
+        backend = "gemini_api"
         print(f"  Pipeline backend : Gemini API (free tier)")
 
+    cost_tracker = CostTracker(backend=backend)
+
     print("\nGenerating answers for each question...")
-    samples = build_samples(client, embeddings, chunks, test_set)
+    samples = build_samples(client, embeddings, chunks, test_set, cost_tracker)
 
     print("\nSelecting RAGAS judge LLM...")
     llm, emb, run_config, label = _make_judge_llm_and_config(api_key)
@@ -264,6 +280,11 @@ def main():
     print("  Thresholds: ✓ = ≥ 0.70   ✗ = < 0.70")
     print("  Judge LLM  :", label)
     print("═" * 72)
+
+    print(f"\n  PIPELINE COST  ({len(test_set)} questions)\n")
+    print(f"    Total (generation + embedding) : ${cost_tracker.session_total:.6f}")
+    print(f"    Per question (average)         : ${cost_tracker.session_total / len(test_set):.6f}")
+    print(f"    Note: RAGAS judge LLM calls are billed separately to the same project.")
 
     results_path = Path(__file__).parent / "results.json"
     def _safe(v):
