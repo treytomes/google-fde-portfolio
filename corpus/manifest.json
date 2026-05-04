@@ -4,7 +4,7 @@
       "slug": "vertex_ai_overview",
       "url": "https://cloud.google.com/vertex-ai/docs/start/introduction-unified-platform",
       "filename": "vertex_ai_overview.txt",
-      "chars": 6986
+      "chars": 6718
     },
     {
       "slug": "gemini_enterprise_platform",
@@ -16,85 +16,85 @@
       "slug": "gemini_models",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/learn/models",
       "filename": "gemini_models.txt",
-      "chars": 13097
+      "chars": 12829
     },
     {
       "slug": "gemini_api_overview",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/start/quickstarts/quickstart-multimodal",
       "filename": "gemini_api_overview.txt",
-      "chars": 31898
+      "chars": 31630
     },
     {
       "slug": "gemini_multimodal",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/multimodal/send-chat-prompts-gemini",
       "filename": "gemini_multimodal.txt",
-      "chars": 9721
+      "chars": 9453
     },
     {
       "slug": "embeddings_overview",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/embeddings/get-text-embeddings",
       "filename": "embeddings_overview.txt",
-      "chars": 16866
+      "chars": 16598
     },
     {
       "slug": "embeddings_api_reference",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/text-embeddings-api",
       "filename": "embeddings_api_reference.txt",
-      "chars": 22671
+      "chars": 22403
     },
     {
       "slug": "rag_overview",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/rag-engine/rag-overview",
       "filename": "rag_overview.txt",
-      "chars": 6215
+      "chars": 5947
     },
     {
       "slug": "rag_quickstart",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/rag-engine/rag-quickstart",
       "filename": "rag_quickstart.txt",
-      "chars": 7749
+      "chars": 7481
     },
     {
       "slug": "grounding_overview",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/grounding/ground-with-google-search",
       "filename": "grounding_overview.txt",
-      "chars": 25498
+      "chars": 25230
     },
     {
       "slug": "context_cache",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/context-cache/context-cache-overview",
       "filename": "context_cache.txt",
-      "chars": 6246
+      "chars": 5978
     },
     {
       "slug": "agent_builder_overview",
       "url": "https://cloud.google.com/generative-ai-app-builder/docs/parse-chunk-documents",
       "filename": "agent_builder_overview.txt",
-      "chars": 38793
+      "chars": 38550
     },
     {
       "slug": "vertex_ai_search",
       "url": "https://cloud.google.com/generative-ai-app-builder/docs/create-datastore-ingest",
       "filename": "vertex_ai_search.txt",
-      "chars": 11872
+      "chars": 11629
     },
     {
       "slug": "agent_builder_intro",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/agent-builder/introduction",
       "filename": "agent_builder_intro.txt",
-      "chars": 5021
+      "chars": 4906
     },
     {
       "slug": "vector_search_overview",
       "url": "https://cloud.google.com/vertex-ai/docs/vector-search/overview",
       "filename": "vector_search_overview.txt",
-      "chars": 17156
+      "chars": 16888
     },
     {
       "slug": "gcp_auth_adc",
       "url": "https://cloud.google.com/docs/authentication/application-default-credentials",
       "filename": "gcp_auth_adc.txt",
-      "chars": 5768
+      "chars": 5653
     },
     {
       "slug": "vertex_ai_access_control",
@@ -106,13 +106,13 @@
       "slug": "responsible_ai",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/docs/learn/responsible-ai",
       "filename": "responsible_ai.txt",
-      "chars": 6019
+      "chars": 5751
     },
     {
       "slug": "gemini_pricing",
       "url": "https://cloud.google.com/vertex-ai/generative-ai/pricing",
       "filename": "gemini_pricing.txt",
-      "chars": 50000
+      "chars": 10000
     }
   ],
   "skipped": []

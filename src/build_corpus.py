@@ -64,8 +64,30 @@ PAGES = [
 ]
 
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; portfolio-rag-bot/1.0)"}
-DELAY_SECONDS = 1.5   # polite crawl delay
-MAX_CHARS     = 50_000  # cap per page to avoid single pages dominating the chunk index
+DELAY_SECONDS = 1.5    # polite crawl delay
+MAX_CHARS     = 50_000  # default per-page cap
+
+# Per-slug overrides — lower cap for pages that are large but low-signal for Q&A.
+# gemini_pricing is 50K chars of pricing tables; 2-3 chunks is enough to answer
+# "how much does X cost?" without letting it dominate retrieval for every other topic.
+MAX_CHARS_OVERRIDE = {
+    "gemini_pricing": 10_000,
+}
+
+# Site-wide boilerplate patterns to strip after text extraction.
+# These appear on nearly every GCP docs page and add noise without signal.
+_BOILERPLATE_PATTERNS = [
+    r"Vertex AI is transitioning to become part of Gemini Enterprise Agent Platform\."
+    r"\s*See the most up-to-date information in the Agent Platform documentation\s*\.?",
+    r"Note:\s*Vertex AI Search is being renamed to Agent Search\."
+    r"\s*We are in the process of updating content to reflect the new branding\.",
+    r"Stay organized with collections\s+Save and categorize content based on your preferences\.",
+    r"Send feedback",
+]
+_BOILERPLATE_RE = re.compile(
+    "|".join(f"(?:{p})" for p in _BOILERPLATE_PATTERNS),
+    re.IGNORECASE,
+)
 
 
 def fetch(url: str) -> str:
@@ -91,6 +113,10 @@ def extract_text(html: str) -> str:
 
     # Collapse whitespace and normalize unicode
     text = unicodedata.normalize("NFKC", text)
+    text = re.sub(r"\s+", " ", text).strip()
+
+    # Strip site-wide boilerplate that appears on nearly every GCP docs page
+    text = _BOILERPLATE_RE.sub(" ", text)
     text = re.sub(r"\s+", " ", text).strip()
     return text
 
@@ -118,9 +144,10 @@ def main():
                 skipped.append({"slug": slug, "url": url, "reason": "too short"})
                 continue
 
-            if len(text) > MAX_CHARS:
-                text = text[:MAX_CHARS]
-                print(f"  TRUNCATED to {MAX_CHARS:,} chars")
+            cap = MAX_CHARS_OVERRIDE.get(slug, MAX_CHARS)
+            if len(text) > cap:
+                text = text[:cap]
+                print(f"  TRUNCATED to {cap:,} chars")
             filepath.write_text(text, encoding="utf-8")
             manifest.append({"slug": slug, "url": url, "filename": filename, "chars": len(text)})
             print(f"  OK  {len(text):,} chars → {filename}")
