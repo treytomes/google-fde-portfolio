@@ -21,7 +21,9 @@ from google.genai import types
 
 
 EMBEDDING_MODEL = "gemini-embedding-001"
-BATCH_SIZE = 10  # free-tier embedding quota is tight; small batches avoid 429s
+# Free-tier embedding quota is ~1500 req/min but burst limits are tight.
+# Batches of 50 hit 429 RESOURCE_EXHAUSTED reliably in testing; 10 + 2s pause works.
+BATCH_SIZE = 10
 BATCH_DELAY = 2  # seconds between batches
 
 
