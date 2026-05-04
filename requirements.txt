@@ -9,14 +9,14 @@ numpy
 # ── Utilities ─────────────────────────────────────────────────────────────────
 python-dotenv
 
-# ── Evaluation (Day 3 — uncomment when ready) ─────────────────────────────────
-# ragas
-# datasets
+# ── Evaluation (Day 3) ────────────────────────────────────────────────────────
+ragas
+datasets
+langchain-google-genai
 
 # ── Vertex AI verification path (Day 4 — uncomment when ready) ────────────────
 # google-cloud-aiplatform
 
 # ── Orchestration stretch (Day 5 — uncomment when ready) ──────────────────────
 # langgraph
-# langchain-google-genai
 # langchain-google-vertexai
