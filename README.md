@@ -51,10 +51,10 @@ Vertex AI.
 
 | Metric | Score | Threshold |
 |---|---|---|
-| Faithfulness | **0.98** | ≥ 0.70 ✓ |
-| Context Recall | **0.94** | ≥ 0.70 ✓ |
+| Faithfulness | **0.96** | ≥ 0.70 ✓ |
+| Context Recall | **0.93** | ≥ 0.70 ✓ |
 | Answer Relevancy | **0.86** | ≥ 0.70 ✓ |
-| Context Precision | **0.71** | ≥ 0.70 ✓ |
+| Context Precision | **0.73** | ≥ 0.70 ✓ |
 
 Context Precision is lowest on pricing queries — the pricing page is large and noisy,
 so retrieval pulls in unrelated rows alongside the relevant ones. RAGAS surfaces this

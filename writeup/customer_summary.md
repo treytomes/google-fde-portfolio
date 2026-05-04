@@ -61,10 +61,10 @@ answer quality. Results (Vertex AI judge, `gemini-2.5-flash`):
 
 | Metric | Score | What it means |
 |---|---|---|
-| **Faithfulness** | **0.98** | 98% of answer claims are directly supported by retrieved text |
-| **Context Recall** | **0.94** | Retrieval finds the relevant documentation in 94% of cases |
+| **Faithfulness** | **0.96** | 96% of answer claims are directly supported by retrieved text |
+| **Context Recall** | **0.93** | Retrieval finds the relevant documentation in 93% of cases |
 | **Answer Relevancy** | **0.86** | Answers address what was actually asked |
-| **Context Precision** | **0.71** | Retrieved chunks are on-topic (lower on pricing queries — see below) |
+| **Context Precision** | **0.73** | Retrieved chunks are on-topic (lower on pricing queries — see below) |
 
 The one weak area — Context Precision on pricing questions — reflects a corpus
 quality issue: the pricing page is large and noisy, so retrieval pulls in unrelated
