@@ -16,8 +16,9 @@ langchain-google-genai
 ollama           # Ollama Python client — local LLM fallback
 langchain-ollama # LangChain wrapper for Ollama — used by RAGAS judge fallback
 
-# ── Vertex AI verification path (Day 4 — uncomment when ready) ────────────────
-# google-cloud-aiplatform
+# ── Vertex AI verification path (Day 4) ───────────────────────────────────────
+# google-genai already supports Vertex AI via genai.Client(vertexai=True, ...)
+# google-cloud-aiplatform is NOT needed — we use google-genai throughout
 
 # ── Orchestration stretch (Day 5 — uncomment when ready) ──────────────────────
 # langgraph

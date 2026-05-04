@@ -61,7 +61,15 @@ def generate(query: str, context_chunks: list[dict], client,
     # Ollama path — used when client is None (all Gemini quota exhausted)
     if client is None:
         print(f"Using local Ollama ({OLLAMA_MODEL})...")
-        return {"text": _generate_ollama(prompt), "sources": sources}
+        text = _generate_ollama(prompt)
+        # Ollama doesn't return token counts; estimate from character length
+        input_tokens  = len(prompt) // 4
+        output_tokens = len(text) // 4
+        return {
+            "text": text,
+            "sources": sources,
+            "usage": {"input_tokens": input_tokens, "output_tokens": output_tokens, "model": OLLAMA_MODEL},
+        }
 
     for attempt in range(_MAX_RETRIES):
         try:
@@ -69,7 +77,16 @@ def generate(query: str, context_chunks: list[dict], client,
                 model=model,
                 contents=prompt,
             )
-            return {"text": response.text, "sources": sources}
+            usage = response.usage_metadata
+            return {
+                "text": response.text,
+                "sources": sources,
+                "usage": {
+                    "input_tokens":  getattr(usage, "prompt_token_count",     0) or 0,
+                    "output_tokens": getattr(usage, "candidates_token_count", 0) or 0,
+                    "model": model,
+                },
+            }
         except Exception as e:
             err = str(e)
             # Cascade: flash → flash-lite → ollama

@@ -4,12 +4,14 @@ RAGAS evaluation of the RAG pipeline over eval/test_set.json.
 Usage:
     python3 eval/evaluate.py
 
-Requires GEMINI_API_KEY in .env.
+Requires GEMINI_API_KEY in .env (for pipeline generation + free-tier judge).
+For Vertex AI judge path: gcloud auth application-default login + GCP_PROJECT_ID in .env.
 
 Judge LLM fallback chain:
-  1. gemini-2.5-flash-lite   (preferred — fast, sufficient quota)
-  2. Ollama gemma3:1b        (fast local fallback, ~44s/metric/question)
-  3. Ollama gemma4:e2b       (slow local fallback, ~235s/metric/question)
+  1. Vertex AI gemini-2.5-flash   (preferred — no daily quota, uses billing credits)
+  2. gemini-2.5-flash-lite        (free-tier API fallback)
+  3. Ollama gemma3:1b             (fast local fallback, ~44s/metric/question)
+  4. Ollama gemma4:e2b            (slow local fallback, ~235s/metric/question)
 
 Pull local models with: ollama pull gemma3:1b && ollama pull gemma4:e2b
 """
@@ -53,7 +55,7 @@ OLLAMA_SLOW_MODEL = OLLAMA_MODEL  # ~235s/metric/question — fallback if 1b not
 
 INTER_QUESTION_DELAY = 12  # seconds between questions — free-tier rate limit courtesy
 
-GEMINI_RUN_CONFIG = RunConfig(timeout=120, max_workers=4,  max_retries=5)
+GEMINI_RUN_CONFIG = RunConfig(timeout=180, max_workers=4,  max_retries=5)
 OLLAMA_RUN_CONFIG = RunConfig(timeout=600, max_workers=1,  max_retries=3)
 
 METRICS = [faithfulness, answer_relevancy, context_precision, context_recall]
@@ -77,6 +79,27 @@ def _gemini_quota_ok(api_key: str) -> bool:
         return False
 
 
+def _vertex_ai_available() -> bool:
+    project = os.environ.get("GCP_PROJECT_ID")
+    if not project:
+        return False
+    try:
+        from langchain_google_genai import ChatGoogleGenerativeAI as _CGAI
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            _CGAI(
+                model="gemini-2.5-flash",
+                google_api_key="unused",
+                vertexai=True,
+                project=project,
+                location=os.environ.get("GCP_LOCATION", "us-central1"),
+            ).invoke("ok")
+        return True
+    except Exception:
+        return False
+
+
 def _ollama_model_available(model: str) -> bool:
     try:
         import ollama
@@ -88,6 +111,36 @@ def _ollama_model_available(model: str) -> bool:
 
 def _make_judge_llm_and_config(api_key: str):
     """Return (ragas_llm, ragas_emb, run_config, label) for the best available judge."""
+    import warnings
+
+    project  = os.environ.get("GCP_PROJECT_ID")
+    location = os.environ.get("GCP_LOCATION", "us-central1")
+
+    # 1. Vertex AI — no daily quota, uses billing credits
+    if project and _vertex_ai_available():
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            llm = LangchainLLMWrapper(
+                ChatGoogleGenerativeAI(
+                    model="gemini-2.5-flash",
+                    google_api_key="unused",
+                    vertexai=True,
+                    project=project,
+                    location=location,
+                )
+            )
+            emb = LangchainEmbeddingsWrapper(
+                GoogleGenerativeAIEmbeddings(
+                    model="models/gemini-embedding-001",
+                    google_api_key="unused",
+                    vertexai=True,
+                    project=project,
+                    location=location,
+                )
+            )
+        return llm, emb, GEMINI_RUN_CONFIG, f"Vertex AI gemini-2.5-flash ({location})"
+
+    # 2. Free-tier Gemini API
     emb = LangchainEmbeddingsWrapper(
         GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001", google_api_key=api_key)
     )
@@ -95,8 +148,9 @@ def _make_judge_llm_and_config(api_key: str):
         llm = LangchainLLMWrapper(
             ChatGoogleGenerativeAI(model="gemini-2.5-flash-lite", google_api_key=api_key)
         )
-        return llm, emb, GEMINI_RUN_CONFIG, "gemini-2.5-flash-lite"
+        return llm, emb, GEMINI_RUN_CONFIG, "gemini-2.5-flash-lite (free tier)"
 
+    # 3. Local Ollama fallback
     from langchain_ollama import ChatOllama
     for model in [OLLAMA_FAST_MODEL, OLLAMA_SLOW_MODEL]:
         if _ollama_model_available(model):
@@ -107,8 +161,8 @@ def _make_judge_llm_and_config(api_key: str):
             return llm, emb, OLLAMA_RUN_CONFIG, label
 
     raise RuntimeError(
-        "No judge LLM available. Either restore Gemini quota or run: "
-        f"ollama pull {OLLAMA_FAST_MODEL}"
+        "No judge LLM available. Either configure Vertex AI (GCP_PROJECT_ID in .env) "
+        f"or run: ollama pull {OLLAMA_FAST_MODEL}"
     )
 
 
@@ -146,7 +200,14 @@ def main():
     test_set = json.loads(TEST_SET_PATH.read_text())
     print(f"  {len(test_set)} questions")
 
-    client = genai.Client(api_key=api_key)
+    project  = os.environ.get("GCP_PROJECT_ID")
+    location = os.environ.get("GCP_LOCATION", "us-central1")
+    if project:
+        client = genai.Client(vertexai=True, project=project, location=location)
+        print(f"  Pipeline backend : Vertex AI ({location})")
+    else:
+        client = genai.Client(api_key=api_key)
+        print(f"  Pipeline backend : Gemini API (free tier)")
 
     print("\nGenerating answers for each question...")
     samples = build_samples(client, embeddings, chunks, test_set)
@@ -184,17 +245,20 @@ def main():
         print(f"  Q{i+1}: {q[:65]}...")
         for col in METRIC_COLS:
             val = row.get(col)
-            bar  = "█" * int((val or 0) * 10) if val is not None else ""
-            s    = f"{val:.3f}" if val is not None else "  N/A"
+            ok  = val is not None and val == val  # False for None and NaN
+            bar  = "█" * int(val * 10) if ok else ""
+            s    = f"{val:.3f}" if ok else "  N/A"
             print(f"       {DISPLAY_NAMES[col]:<22} {s}  {bar}")
         print()
 
     print("  Aggregate means:\n")
     for col in METRIC_COLS:
         val  = means[col]
-        bar  = "█" * int(val * 10)
-        gate = "✓" if val >= 0.7 else "✗"
-        print(f"  {gate}  {DISPLAY_NAMES[col]:<22} {val:.3f}  {bar}")
+        ok   = val == val  # False for NaN
+        bar  = "█" * int(val * 10) if ok else ""
+        gate = ("✓" if val >= 0.7 else "✗") if ok else "?"
+        s    = f"{val:.3f}" if ok else "  N/A"
+        print(f"  {gate}  {DISPLAY_NAMES[col]:<22} {s}  {bar}")
 
     print("\n" + "═" * 72)
     print("  Thresholds: ✓ = ≥ 0.70   ✗ = < 0.70")
@@ -202,14 +266,21 @@ def main():
     print("═" * 72)
 
     results_path = Path(__file__).parent / "results.json"
+    def _safe(v):
+        """Convert metric value to float or None, handling NaN."""
+        if v is None:
+            return None
+        f = float(v)
+        return round(f, 4) if f == f else None  # f != f is True for NaN
+
     output = {
         "judge_llm": label,
-        "means": {DISPLAY_NAMES[c]: round(float(means[c]), 4) for c in METRIC_COLS},
+        "means": {DISPLAY_NAMES[c]: _safe(means[c]) for c in METRIC_COLS},
         "per_question": [
             {
                 "question": test_set[i]["question"],
                 "topic": test_set[i]["topic"],
-                **{DISPLAY_NAMES[c]: round(float(row.get(c, 0) or 0), 4) for c in METRIC_COLS},
+                **{DISPLAY_NAMES[c]: _safe(row.get(c)) for c in METRIC_COLS},
             }
             for i, row in df.iterrows()
         ],
