@@ -18,38 +18,63 @@ Electric Supply. The stack maps directly to GCP equivalents at every layer.
 
 ---
 
-## Google Cloud Platform
+## Two-Path Backend Strategy
 
-| Service | Purpose | AWS Bedrock Equivalent |
-|---|---|---|
-| **Vertex AI** | Platform for all ML/AI services | Amazon Bedrock (platform) |
-| **Gemini 1.5 Pro** (via Vertex AI) | Text generation / LLM inference | Bedrock Claude / Titan |
-| **Vertex AI Embeddings** (`text-embedding-004`) | Embed queries and document chunks | Bedrock Titan Embeddings |
-| **Vertex AI Vector Search** *(stretch)* | Managed ANN vector index | Bedrock Knowledge Bases (managed) |
-| **Vertex AI Agent Builder** *(reference)* | Managed agent/search platform | Bedrock Agents |
-| **GCP IAM / ADC** | Authentication | AWS IAM / credential chain |
+The notebook supports two backends, selected by a single variable at the top:
 
-### SDK
-
-```
-google-cloud-aiplatform   # Vertex AI Python SDK (primary)
-vertexai                  # High-level Vertex AI SDK (same package, different namespace)
+```python
+BACKEND = "gemini_api"   # Free development path (default)
+# BACKEND = "vertex_ai"  # Enterprise path — requires GCP billing account
 ```
 
-**Not used:** `google-generativeai` — that targets the direct Gemini API, not Vertex AI.
+This design strengthens the FDE pitch: it demonstrates explicit awareness of the
+difference between the Gemini API (direct, consumer/developer) and Vertex AI
+(enterprise, managed, IAM-controlled), which is a common customer decision point.
 
-### Auth
+### Path 1 — Gemini API (Free Development Path)
 
-Application Default Credentials (ADC):
-```bash
-gcloud auth application-default login
-```
-SDK picks up credentials automatically; no credential file management needed for local dev.
-Every SDK call requires `project` and `location` at init:
+Used for all development, testing, and the primary demo run.
+
+| Component | Detail |
+|---|---|
+| SDK | `google-generativeai` |
+| Auth | `GEMINI_API_KEY` in `.env` — free tier, no billing account required |
+| Model (generation) | `gemini-2.0-flash` — free tier, 15 RPM / 1M TPD |
+| Model (embeddings) | `models/text-embedding-004` — free tier |
+| AWS equivalent | Direct Bedrock API with API key (vs. IAM-gated Bedrock) |
+
+Free tier limits are well within portfolio demo usage. No billing surprises.
+
+### Path 2 — Vertex AI (Verification Path)
+
+Used for a final verification run before the project is called done. Confirms the
+same code works against the enterprise-grade platform.
+
+| Component | Detail |
+|---|---|
+| SDK | `google-cloud-aiplatform` / `vertexai` |
+| Auth | Application Default Credentials (ADC) via `gcloud auth application-default login` |
+| Model (generation) | `gemini-2.0-flash` via Vertex AI |
+| Model (embeddings) | `text-embedding-004` via Vertex AI |
+| Cost | ~$1 for a full demo run — covered by GCP free trial credits |
+| AWS equivalent | Bedrock with IAM role / service account auth |
+
+Every Vertex AI SDK call requires project and location at init:
 ```python
 import vertexai
 vertexai.init(project=PROJECT_ID, location="us-central1")
 ```
+
+### SDK Comparison
+
+| Concern | Gemini API (`google-generativeai`) | Vertex AI (`google-cloud-aiplatform`) |
+|---|---|---|
+| Auth | API key | ADC / service account |
+| Billing | Free tier available | Billing account required |
+| Enterprise features | Limited | Full (VPC-SC, CMEK, audit logs) |
+| Regional control | No | Yes |
+| SLA | No | Yes |
+| When to use | Prototyping, demos, personal projects | Production, regulated industries |
 
 ---
 
@@ -62,7 +87,9 @@ vertexai.init(project=PROJECT_ID, location="us-central1")
 | Similarity search | Cosine similarity (numpy) | Vertex AI Vector Search ANN |
 | Retrieval | Top-k cosine search | Managed vector index query |
 
-### Core libraries (MVP)
+The RAG pipeline is backend-agnostic — only the embedding call differs between paths.
+
+### Core libraries
 
 ```
 numpy         # vector math / cosine similarity
@@ -70,21 +97,19 @@ numpy         # vector math / cosine similarity
 
 ---
 
-## Orchestration
+## Orchestration (Stretch)
 
 | Option | Status | Notes |
 |---|---|---|
-| **LangGraph** | Primary | Graph-based agent; Gemini as LLM node; explicit state machine |
-| **Google ADK** | Alternative | Google's Agent Development Kit; more opinionated |
+| **LangGraph** | Stretch (Day 4) | Graph-based agent; Gemini as LLM node; explicit state machine |
+| **Google ADK** | Reference only | Google's Agent Development Kit; more opinionated |
 
-LangGraph is preferred — it's framework-agnostic and maps cleanly to the LangChain
-graph model, making the AWS-to-GCP comparison story cleaner.
-
-### Libraries
+### Libraries (if stretch is implemented)
 
 ```
 langgraph
-langchain-google-vertexai   # LangChain wrapper for Vertex AI / Gemini
+langchain-google-genai      # LangChain wrapper for Gemini API path
+langchain-google-vertexai   # LangChain wrapper for Vertex AI path
 ```
 
 ---
@@ -117,8 +142,8 @@ datasets   # HuggingFace datasets (RAGAS input format)
 
 | Tool | Purpose |
 |---|---|
-| `gcloud` CLI | GCP project setup, ADC auth, API enablement |
-| `python-dotenv` | `.env` for `PROJECT_ID` and config (not secrets) |
+| `gcloud` CLI | GCP project setup, ADC auth for Vertex AI verification |
+| `python-dotenv` | `.env` for `GEMINI_API_KEY`, `PROJECT_ID`, and config |
 | VS Code + Claude Code | IDE and AI pair programming |
 | GitHub | Version control; Issues for SDD task tracking |
 
@@ -127,12 +152,11 @@ datasets   # HuggingFace datasets (RAGAS input format)
 ## Dependency Summary
 
 ```
-# GCP / Vertex AI
-google-cloud-aiplatform
+# Gemini API (free development path)
+google-generativeai
 
-# Orchestration
-langgraph
-langchain-google-vertexai
+# Vertex AI (verification path)
+google-cloud-aiplatform
 
 # RAG (MVP)
 numpy
@@ -140,6 +164,11 @@ numpy
 # Evaluation
 ragas
 datasets
+
+# Orchestration (stretch)
+langgraph
+langchain-google-genai
+langchain-google-vertexai
 
 # Dev utility
 python-dotenv

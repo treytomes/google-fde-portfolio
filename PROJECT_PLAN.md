@@ -28,69 +28,107 @@ move — concentrated study, working implementation, demonstrate the pattern.
 
 ## Target Stack
 
-| Layer | Technology |
-|---|---|
-| Model inference | Gemini via Vertex AI (Python SDK) |
-| Embeddings | Vertex AI text-embedding model |
-| RAG / retrieval | Vertex AI Search OR manual vector store |
-| Orchestration | LangGraph (Gemini as LLM node) or Google ADK |
-| Evaluation | RAGAS (faithfulness, answer relevance, context precision/recall) |
-| Auth | GCP service account / Application Default Credentials (ADC) |
-| Language | Python |
+| Layer | Development path | Verification path |
+|---|---|---|
+| Model inference | Gemini API (`google-generativeai`, free tier) | Gemini via Vertex AI (`google-cloud-aiplatform`) |
+| Embeddings | Gemini API `text-embedding-004` (free tier) | Vertex AI `text-embedding-004` |
+| Auth | `GEMINI_API_KEY` in `.env` | Application Default Credentials (ADC) |
+| RAG / retrieval | numpy cosine similarity (MVP); Vertex AI Vector Search (stretch) | ← same |
+| Orchestration | LangGraph (Gemini as LLM node) — stretch goal | ← same |
+| Evaluation | RAGAS (faithfulness, answer relevance, context precision/recall) | ← same |
+| Language | Python | ← same |
+| Presentation | Jupyter Notebook | ← same |
+
+The notebook backend is selected by a single variable (`BACKEND = "gemini_api"` or `"vertex_ai"`).
+All development and the primary demo run use the free Gemini API path.
 
 ---
 
 ## Project Description
 
-**A document Q&A assistant over a domain-specific corpus**, evaluated with RAGAS.
+**A RAG-enhanced Gemini chatbot that answers questions about Vertex AI**, built and
+demonstrated in a Jupyter Notebook.
 
-The domain doesn't matter — what matters is the architecture and the evaluation story.
-Good candidate corpora:
-- AWS vs GCP service mapping documentation (directly relevant to FDE context)
-- Technical documentation from an open-source project
-- Any publicly available domain-specific document set
+The corpus is the GCP / Vertex AI official documentation — making the demo
+self-referential and directly relevant to the FDE role: the assistant knows what
+it was built on, and you can ask it anything about the platform.
 
 **Deliverables:**
 
-1. **Working RAG pipeline** — documents chunked and embedded via Vertex AI, retrieval
-   over user queries, generation via Gemini
-2. **Agentic wrapper (stretch)** — a LangGraph agent that decides whether to retrieve
-   from documents or answer from model knowledge
-3. **RAGAS evaluation** — test set of 10–20 Q&A pairs, evaluation run with scores,
-   brief analysis of results
-4. **One-page writeup** — framed as a customer presentation:
-   - Business problem
-   - Architecture diagram or description
-   - Evaluation results
-   - What I'd do differently at enterprise scale
-   - AWS Bedrock comparison (what's the same, what's different, what surprised me)
+1. **Jupyter Notebook** — the primary deliverable. Walks through every pipeline stage
+   with narrative markdown, inline outputs, and an interactive Q&A demo at the end.
+2. **Working RAG pipeline** — GCP docs chunked and embedded via Vertex AI, cosine
+   retrieval, generation via Gemini with retrieved context
+3. **RAGAS evaluation** — test set of 10–20 Q&A pairs, evaluation run with scores
+   displayed inline in the notebook, brief analysis
+4. **One-page writeup** — framed as a customer presentation (see `writeup/` directory)
+5. **Agentic wrapper (stretch)** — LangGraph agent that decides whether to retrieve
+   from the corpus or answer from model knowledge
+
+---
+
+## Notebook Structure (Demo Experience)
+
+The notebook is the demo artifact. A reviewer should be able to run it top-to-bottom
+and experience a working RAG chatbot. Each section has a markdown header, brief
+explanation, and visible output.
+
+| Section | Content |
+|---|---|
+| 1. Setup & Auth | `vertexai.init(...)`, confirm credentials, print model info |
+| 2. Corpus Ingestion | Load GCP docs, chunk, show sample chunks |
+| 3. Embedding | Embed chunks via Vertex AI, show vector shape and sample |
+| 4. Retrieval | Query → embed → cosine search → display top-k chunks |
+| 5. Generation | Pass retrieved context to Gemini, display answer |
+| 6. Interactive Q&A | Input cell: type any question about Vertex AI, see full RAG trace |
+| 7. RAGAS Evaluation | Run evaluation, display scores as a table or bar chart |
+| 8. Analysis | Markdown discussion: what worked, what didn't, enterprise considerations |
+
+Section 6 is the demo centerpiece — a cell where you enter a question and see:
+- The query
+- The retrieved chunks (with source URLs)
+- The generated answer
 
 ---
 
 ## Implementation Plan
 
-### Day 1 — GCP Setup & Vertex AI Quickstart
+### Day 1 — Environment Setup & Gemini API Quickstart
 - [ ] Create GCP project (or use existing)
-- [ ] Enable Vertex AI API
-- [ ] Configure Application Default Credentials (`gcloud auth application-default login`)
-- [ ] Run Vertex AI quickstart: generate text with Gemini via Python SDK
-- [ ] Run embedding quickstart: embed a string, confirm output shape
-- [ ] Confirm auth and SDK are working end-to-end
+- [ ] Obtain Gemini API key (free tier) — for development path
+- [ ] Set up Python venv, install `google-generativeai`, configure `.env`
+- [ ] Run Gemini API quickstart: generate text with `gemini-2.0-flash`
+- [ ] Run embedding quickstart: embed a string with `text-embedding-004`, confirm output shape
+- [ ] Confirm free-tier auth and SDK are working end-to-end
 
-### Day 2 — RAG Pipeline
-- [ ] Select and prepare corpus (chunk documents)
+### Day 2 — Corpus & RAG Pipeline
+- [ ] Fetch and prepare GCP / Vertex AI documentation corpus (HTML → clean text)
+- [ ] Chunk documents (fixed-size with overlap)
 - [ ] Embed chunks using Vertex AI text-embedding model
-- [ ] Store embeddings (in-memory numpy or simple JSON for MVP; Vertex AI Vector Search for stretch)
-- [ ] Build retrieval function: embed query, cosine similarity search, return top-k chunks
-- [ ] Build generation function: format retrieved chunks as context, call Gemini, return answer
-- [ ] Wire together into a working Q&A loop
+- [ ] Build retrieval: embed query, cosine similarity search, return top-k chunks
+- [ ] Build generation: format retrieved chunks as context, call Gemini, return answer
+- [ ] Wire into a working Q&A loop in the notebook
 
-### Day 3 — Evaluation & Write-up
-- [ ] Install RAGAS, build test set (10–20 Q&A pairs with ground truth answers)
+### Day 3 — Evaluation, Polish & Write-up
+- [ ] Build test set (10–20 Q&A pairs with ground truth answers about Vertex AI)
 - [ ] Run RAGAS evaluation: faithfulness, answer relevance, context precision, context recall
+- [ ] Display RAGAS scores inline in the notebook (table or chart)
 - [ ] Analyze results — where does the pipeline fall short?
-- [ ] Write one-page customer-facing summary
-- [ ] Optional: add LangGraph agentic wrapper (retrieve vs. direct answer decision)
+- [ ] Polish notebook narrative: section headers, markdown explanations, clean outputs
+- [ ] Write one-page customer-facing summary (`writeup/customer_summary.md`)
+
+### Day 4 — Vertex AI Verification
+- [ ] Enable Vertex AI API on GCP project
+- [ ] Configure Application Default Credentials (`gcloud auth application-default login`)
+- [ ] Switch notebook to `BACKEND = "vertex_ai"`, run top-to-bottom
+- [ ] Confirm Gemini generation and embeddings work via Vertex AI SDK
+- [ ] Note any behavioral differences vs. the Gemini API path
+- [ ] Update resume: add `GCP (Vertex AI · Gemini · Vertex AI Search)` to competencies
+
+### Day 5 (Stretch) — Agentic Wrapper
+- [ ] Add LangGraph agent node: route query to RAG retrieval vs. direct Gemini answer
+- [ ] Integrate into notebook as an optional Section 9
+- [ ] Compare agentic vs. naive RAG on a few test queries
 
 ---
 
@@ -109,10 +147,10 @@ Before or during Day 1, ensure these are solid:
 
 ## GCP Add-back to Resume
 
-Once Day 1 is complete and Vertex AI SDK is working:
+Once Day 4 is complete and the Vertex AI verification run succeeds:
 - Add `GCP (Vertex AI · Gemini · Vertex AI Search)` to the `resume-2026-fde4.html`
   competencies section under Infrastructure or AI/ML
-- Do not add GCP back until the quickstart is confirmed working
+- Do not add GCP back until the Vertex AI backend is confirmed working end-to-end
 
 ---
 
@@ -120,9 +158,10 @@ Once Day 1 is complete and Vertex AI SDK is working:
 
 - `PROJECT_PLAN.md` — this file
 - `CLAUDE.md` — Claude Code context for this project
-- `src/` — Python implementation
-- `corpus/` — document corpus for RAG
-- `eval/` — RAGAS evaluation scripts and results
+- `TECH_STACK.md` — detailed technology choices and rationale
+- `notebooks/` — Jupyter notebooks (primary deliverable; `src/` for any shared helper modules)
+- `corpus/` — fetched and processed GCP documentation
+- `eval/` — RAGAS test set and evaluation results
 - `writeup/` — customer-facing one-page summary
 
 ---

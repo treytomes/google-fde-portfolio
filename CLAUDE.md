@@ -22,12 +22,17 @@ Treat him as an experienced engineer getting oriented to a new cloud, not a begi
 ## Target Stack
 
 - **Language:** Python
-- **Model:** Gemini via Vertex AI Python SDK (`google-cloud-aiplatform`)
-- **Embeddings:** Vertex AI text-embedding model
+- **Model (dev):** Gemini API via `google-generativeai` — free tier, `GEMINI_API_KEY` in `.env`
+- **Model (verification):** Gemini via Vertex AI Python SDK (`google-cloud-aiplatform`) — final verification run only
+- **Embeddings:** `text-embedding-004` — same model, available on both paths
 - **RAG:** Manual vector store (numpy/cosine) for MVP; Vertex AI Vector Search for stretch
-- **Orchestration:** LangGraph (with Gemini as LLM node) or Google ADK
+- **Orchestration:** LangGraph (with Gemini as LLM node) — stretch goal
 - **Evaluation:** RAGAS
-- **Auth:** Application Default Credentials (ADC) via `gcloud auth application-default login`
+- **Auth (dev):** Gemini API key — no billing account needed
+- **Auth (verification):** Application Default Credentials (ADC) via `gcloud auth application-default login`
+
+The notebook has a single `BACKEND` toggle at the top. All development uses `"gemini_api"`.
+The final verification switches to `"vertex_ai"` to confirm enterprise compatibility.
 
 ## Project Structure
 
@@ -56,8 +61,10 @@ google-fde-portfolio/
 - **Vertex AI vs Bedrock:** Vertex AI Studio ≈ Bedrock Playground; Vertex AI Search ≈
   Bedrock Knowledge Bases; Vertex AI Agent Builder ≈ Bedrock Agents; Model Garden ≈
   Bedrock model catalog.
-- **Gemini SDK:** `from vertexai.generative_models import GenerativeModel` —
-  not the google-generativeai package (that's the direct Gemini API, not Vertex AI).
+- **Gemini SDK (dev path):** `import google.generativeai as genai` — direct Gemini API,
+  free tier, used for all development.
+- **Gemini SDK (verification path):** `from vertexai.generative_models import GenerativeModel` —
+  Vertex AI SDK, used for the final verification run only.
 - **Project/location:** Every Vertex AI call needs `project` and `location` params.
   Initialize once with `vertexai.init(project=PROJECT_ID, location="us-central1")`.
 
