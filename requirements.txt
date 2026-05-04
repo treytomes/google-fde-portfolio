@@ -20,6 +20,5 @@ langchain-ollama # LangChain wrapper for Ollama — used by RAGAS judge fallback
 # google-genai already supports Vertex AI via genai.Client(vertexai=True, ...)
 # google-cloud-aiplatform is NOT needed — we use google-genai throughout
 
-# ── Orchestration stretch (Day 5 — uncomment when ready) ──────────────────────
-# langgraph
-# langchain-google-vertexai
+# ── Orchestration (Day 5) ─────────────────────────────────────────────────────
+langgraph
